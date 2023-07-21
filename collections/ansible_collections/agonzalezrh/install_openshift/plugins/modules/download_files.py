@@ -4,11 +4,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
-import requests, json, time, os
+import requests
+import os
 
-from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import (
-access_token
-)
+from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import access_token
 
 
 DOCUMENTATION = r'''
@@ -57,8 +57,6 @@ result:
     returned: always
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-
 
 def run_module():
     # define available arguments/parameters a user can pass to the module
@@ -102,23 +100,23 @@ def run_module():
         "Content-Type": "application/json"
     }
     response = session.get(
-      "https://api.openshift.com/api/assisted-install/v2/clusters/" + module.params['cluster_id'] + "/downloads/files",
-      headers=headers,
-      params=params
+        "https://api.openshift.com/api/assisted-install/v2/clusters/" + module.params['cluster_id'] + "/downloads/files",
+        headers=headers,
+        params=params
     )
     if "code" in response:
         module.fail_json(msg='Request failed: ' + response)
 
     try:
-      currentcontent = None
-      if os.path.exists(module.params['dest']):
-        currentcontent = open(module.params['dest'], 'rb').read()
-      if currentcontent != response.content:
-        open(module.params['dest'], 'wb').write(response.content)
-        result['changed'] = True
+        currentcontent = None
+        if os.path.exists(module.params['dest']):
+            currentcontent = open(module.params['dest'], 'rb').read()
+        if currentcontent != response.content:
+            open(module.params['dest'], 'wb').write(response.content)
+            result['changed'] = True
     except IOError as e:
-      module.fail_json(msg='ERROR: ' + str(e))
-      
+        module.fail_json(msg='ERROR: ' + str(e))
+
     result['result'] = response.content
 
     # in the event of a successful module execution, you will want to

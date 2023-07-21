@@ -4,11 +4,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
-import requests, json, time
+import requests
+import time
 
-from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import (
-access_token
-)
+from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import access_token
 
 
 DOCUMENTATION = r'''
@@ -62,8 +62,6 @@ result:
 
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-
 
 def run_module():
     # define available arguments/parameters a user can pass to the module
@@ -103,8 +101,8 @@ def run_module():
         "Content-Type": "application/json"
     }
     response = session.post(
-      "https://api.openshift.com/api/assisted-install/v2/clusters/" + module.params['cluster_id'] + "/actions/install",
-      headers=headers,
+        "https://api.openshift.com/api/assisted-install/v2/clusters/" + module.params['cluster_id'] + "/actions/install",
+        headers=headers,
     )
     if "code" in response.json():
         module.fail_json(msg='ERROR: ', **response.json())
@@ -113,36 +111,36 @@ def run_module():
     cluster_installed = False
     max_retries = module.params['wait_timeout'] / module.params['delay']
 
-    while retries < max_retries and cluster_installed == False:
-      response = access_token._get_access_token(module.params['offline_token'])
-      if response.status_code != 200:
-          module.fail_json(msg='Error getting access token ', **response.json())
+    while retries < max_retries and cluster_installed is False:
+        response = access_token._get_access_token(module.params['offline_token'])
+        if response.status_code != 200:
+            module.fail_json(msg='Error getting access token ', **response.json())
 
-      # if the user is working with this module in only check mode we do not
-      # want to make any changes to the environment, just return the current
-      # state with no modifications
-      if module.check_mode:
-          module.exit_json(**result)
+        # if the user is working with this module in only check mode we do not
+        # want to make any changes to the environment, just return the current
+        # state with no modifications
+        if module.check_mode:
+            module.exit_json(**result)
 
-      # manipulate or modify the state as needed (this is going to be the
-      # part where your module will do what it needs to do)
-      result['access_token'] = response.json()["access_token"]
+        # manipulate or modify the state as needed (this is going to be the
+        # part where your module will do what it needs to do)
+        result['access_token'] = response.json()["access_token"]
 
-      headers = {
-          "Authorization": "Bearer " + response.json()["access_token"],
-          "Content-Type": "application/json"
-      }
-      response = session.get(
-        "https://api.openshift.com/api/assisted-install/v2/clusters/" + module.params['cluster_id'],
-        headers=headers,
-      )
-      if "code" in response.json():
-          module.fail_json(msg='ERROR: ', **response.json())
-      if response.json()['status'] == "installed":
-        cluster_installed = True
-        result['result'] = response.json()
-      else:
-        time.sleep(module.params['delay'])
+        headers = {
+            "Authorization": "Bearer " + response.json()["access_token"],
+            "Content-Type": "application/json"
+        }
+        response = session.get(
+            "https://api.openshift.com/api/assisted-install/v2/clusters/" + module.params['cluster_id'],
+            headers=headers,
+        )
+        if "code" in response.json():
+            module.fail_json(msg='ERROR: ', **response.json())
+        if response.json()['status'] == "installed":
+            cluster_installed = True
+            result['result'] = response.json()
+        else:
+            time.sleep(module.params['delay'])
 
     # in the event of a successful module execution, you will want to
     # simple AnsibleModule.exit_json(), passing the key/value results

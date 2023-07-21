@@ -4,12 +4,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
-import requests, json
+import requests
 
-from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import (
-access_token
-)
-
+from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import access_token
 
 DOCUMENTATION = r'''
 ---
@@ -53,8 +51,6 @@ result:
     returned: always
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-
 
 def run_module():
     # define available arguments/parameters a user can pass to the module
@@ -63,7 +59,7 @@ def run_module():
         offline_token=dict(type='str', required=True),
         cancel=dict(type='bool', required=False, default=False),
     )
-    
+
     session = requests.Session()
     adapter = requests.adapters.HTTPAdapter(max_retries=5)
     session.mount('https://', adapter)
@@ -101,47 +97,40 @@ def run_module():
         "Content-Type": "application/json"
     }
     if module.params['cancel']:
-      response = session.post(
-        "https://api.openshift.com/api/assisted-install/v2/clusters/" + module.params["cluster_id"] + "/actions/cancel",
-        headers=headers,
-      )
-      if len(response.content)>0 and "code" in response.json():
-          result['result'] = response.json()
-          module.fail_json(msg='Request failed: ', **result)
-      else:
-        result['changed'] = True
-
-
-     
-
+        response = session.post(
+            "https://api.openshift.com/api/assisted-install/v2/clusters/" + module.params["cluster_id"] + "/actions/cancel",
+            headers=headers,
+        )
+        if len(response.content) > 0 and "code" in response.json():
+            result['result'] = response.json()
+            module.fail_json(msg='Request failed: ', **result)
+        else:
+            result['changed'] = True
 
     response = session.delete(
-      "https://api.openshift.com/api/assisted-install/v2/clusters/" + module.params["cluster_id"],
-      headers=headers,
+        "https://api.openshift.com/api/assisted-install/v2/clusters/" + module.params["cluster_id"],
+        headers=headers,
     )
-    #result['result'] = response.json()
-
     # Key code only appears if there is an error
-    if len(response.content)>0 and "code" in response.json():
+    if len(response.content) > 0 and "code" in response.json():
         result['result'] = response.json()
         module.fail_json(msg='Request failed: ', **result)
     else:
-      result['changed'] = True
+        result['changed'] = True
 
     response = session.get(
-      "https://api.openshift.com/api/assisted-install/v2/infra-envs/",
-      headers=headers,
-      params={"cluster_id": module.params["cluster_id"]}
+        "https://api.openshift.com/api/assisted-install/v2/infra-envs/",
+        headers=headers,
+        params={"cluster_id": module.params["cluster_id"]}
     )
     for infra_env in response.json():
-      response = session.delete(
-        "https://api.openshift.com/api/assisted-install/v2/infra-envs/" + infra_env['id'],
-        headers=headers,
-      )
-      if len(response.content)>0 and "code" in response.json():
-          result['result'] = response.json()
-          module.fail_json(msg='Request failed: ', **result)
-       
+        response = session.delete(
+            "https://api.openshift.com/api/assisted-install/v2/infra-envs/" + infra_env['id'],
+            headers=headers,
+        )
+        if len(response.content) > 0 and "code" in response.json():
+            result['result'] = response.json()
+            module.fail_json(msg='Request failed: ', **result)
 
     # in the event of a successful module execution, you will want to
     # simple AnsibleModule.exit_json(), passing the key/value results

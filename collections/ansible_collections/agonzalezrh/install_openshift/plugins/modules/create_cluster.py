@@ -4,12 +4,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
-import requests, json
+import requests
+import json
 
-from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import (
-access_token
-)
-
+from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import access_token
 
 DOCUMENTATION = r'''
 ---
@@ -45,7 +44,7 @@ options:
     service_networks:
         description: Defines the service networks range
         required: false
-        type: list 
+        type: list
     olm_operators:
         description: Defines the operators to be installed
         required: false
@@ -83,7 +82,7 @@ options:
         required: false
         type: str
     disk_encryption:
-        description: Enable/disable disk encryption 
+        description: Enable/disable disk encryption
         required: false
         type: dict
     http_proxy:
@@ -153,7 +152,7 @@ options:
 
 author:
     - Alberto Gonzalez (@agonzalezrh)
-'''
+'''  # noqa
 
 EXAMPLES = r'''
 - name: Create a new SNO Assisted Installer Cluster
@@ -175,8 +174,6 @@ result:
     type: dict
     returned: always
 '''
-
-from ansible.module_utils.basic import AnsibleModule
 
 
 def run_module():
@@ -215,15 +212,12 @@ def run_module():
         tags=dict(type='str', required=False),
         vip_dhcp_allocation=dict(type='bool', required=False)
     )
-    
     session = requests.Session()
     adapter = requests.adapters.HTTPAdapter(max_retries=5)
     session.mount('https://', adapter)
-
     result = dict(
         changed=False,
     )
-
     # the AnsibleModule object will be our abstraction working with Ansible
     # this includes instantiation, a couple of common attr would be the
     # args/params passed to the execution, as well as if the module
@@ -232,17 +226,14 @@ def run_module():
         argument_spec=module_args,
         supports_check_mode=True,
     )
-
     response = access_token._get_access_token(module.params['offline_token'])
     if response.status_code != 200:
         module.fail_json(msg='Error getting access token ', **response.json())
-
     # if the user is working with this module in only check mode we do not
     # want to make any changes to the environment, just return the current
     # state with no modifications
     if module.check_mode:
         module.exit_json(**result)
-
     headers = {
         "Authorization": "Bearer " + response.json()["access_token"],
         "Content-Type": "application/json"
@@ -250,22 +241,19 @@ def run_module():
     params = module.params.copy()
     params.pop("offline_token")
     if "cluster_id" in params:
-      params.pop("cluster_id")
+        params.pop("cluster_id")
     params["pull_secret"] = json.loads(params["pull_secret"])
     response = session.post(
-      "https://api.openshift.com/api/assisted-install/v2/clusters",
-      headers=headers,
-      json=params
+        "https://api.openshift.com/api/assisted-install/v2/clusters",
+        headers=headers,
+        json=params
     )
-
     result['result'] = response.json()
-
     # Key code only appears if there is an error
     if "code" in response.json():
         module.fail_json(msg='Request failed: ', **result)
     else:
-      result['changed'] = True
-
+        result['changed'] = True
     # in the event of a successful module execution, you will want to
     # simple AnsibleModule.exit_json(), passing the key/value results
     module.exit_json(**result)

@@ -70,14 +70,14 @@ spec:
           disks:
             - bootOrder: 1
               disk:
-                bus: sata
+                bus: virtio
               name: rootdisk
             - bootOrder: 2
               cdrom:
                 bus: sata
               name: installation-cdrom
             - disk:
-                bus: sata
+                bus: virtio
               name: extradisk
               bootOrder: 3
           interfaces:

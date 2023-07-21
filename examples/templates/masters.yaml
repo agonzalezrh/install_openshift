@@ -59,7 +59,7 @@ spec:
           disks:
             - bootOrder: 1
               disk:
-                bus: sata
+                bus: virtip
               name: rootdisk
             - bootOrder: 2
               cdrom:

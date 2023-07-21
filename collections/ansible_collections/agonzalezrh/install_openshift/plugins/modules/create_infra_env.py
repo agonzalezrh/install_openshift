@@ -4,16 +4,16 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
-import requests, json
+import requests
+import json
 
-from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import (
-access_token
-)
+from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import access_token
 
 
 DOCUMENTATION = r'''
 ---
-module: create_infra_env 
+module: create_infra_env
 
 short_description: Creates a new OpenShift Discovery ISO.
 
@@ -27,7 +27,7 @@ options:
         required: false
         type: str
     additional_trust_bundle:
-        description: 	PEM-encoded X.509 certificate bundle. Hosts discovered by this infra-env will trust the certificates in this bundle. Clusters formed from the hosts discovered by this infra-env will also trust the certificates in this bundle.
+        description: 	PEM-encoded X.509 certificate bundle. Hosts discovered by this infra-env will trust the certificates in this bundle. Clusters formed from the hosts discovered by this infra-env will also trust the certificates in this bundle.  
         required: false
         type: str
     cluster_id:
@@ -76,7 +76,7 @@ options:
         type: list
 author:
     - Alberto Gonzalez (@agonzalezrh)
-'''
+'''  # noqa
 
 EXAMPLES = r'''
 - name: Create Infrastructure environment
@@ -95,8 +95,6 @@ result:
     type: dict
     returned: always
 '''
-
-from ansible.module_utils.basic import AnsibleModule
 
 
 def run_module():
@@ -121,7 +119,6 @@ def run_module():
     session = requests.Session()
     adapter = requests.adapters.HTTPAdapter(max_retries=5)
     session.mount('https://', adapter)
-
 
     # seed the result dict in the object
     # we primarily care about changed and state
@@ -161,9 +158,9 @@ def run_module():
     params.pop("offline_token")
     params["pull_secret"] = json.loads(params["pull_secret"])
     response = session.post(
-      "https://api.openshift.com/api/assisted-install/v2/infra-envs",
-      headers=headers,
-      json=params
+        "https://api.openshift.com/api/assisted-install/v2/infra-envs",
+        headers=headers,
+        json=params
     )
 
     result['result'] = response.json()
@@ -171,7 +168,7 @@ def run_module():
     if "code" in response.json():
         module.fail_json(msg='Request failed: ', **result)
     else:
-      result['changed'] = True
+        result['changed'] = True
 
     # in the event of a successful module execution, you will want to
     # simple AnsibleModule.exit_json(), passing the key/value results

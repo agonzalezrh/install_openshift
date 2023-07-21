@@ -4,11 +4,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
-import requests, json, time
+import requests
 
-from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import (
-access_token
-)
+from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import access_token
 
 
 DOCUMENTATION = r'''
@@ -50,7 +49,6 @@ result:
     type: dict
     returned: always
 '''
-from ansible.module_utils.basic import AnsibleModule
 
 
 def run_module():
@@ -91,15 +89,14 @@ def run_module():
         "Content-Type": "application/json"
     }
     response = session.get(
-      "https://api.openshift.com/api/assisted-install/v2/clusters/" + module.params['cluster_id'] + "/credentials",
-      headers=headers,
+        "https://api.openshift.com/api/assisted-install/v2/clusters/" + module.params['cluster_id'] + "/credentials",
+        headers=headers,
     )
     if "code" in response.json():
         module.fail_json(msg='Request failed: ' + response)
     else:
         result['result'] = response.json()
-      
- 
+
     # simple AnsibleModule.exit_json(), passing the key/value results
     module.exit_json(**result)
 

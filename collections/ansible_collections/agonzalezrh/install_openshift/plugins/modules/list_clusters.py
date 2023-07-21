@@ -4,11 +4,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
-import requests, json
+import requests
 
-from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import (
-access_token
-)
+from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.agonzalezrh.install_openshift.plugins.module_utils import access_token
 
 
 DOCUMENTATION = r'''
@@ -72,8 +71,6 @@ result:
     returned: always
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-
 
 def run_module():
     # define available arguments/parameters a user can pass to the module
@@ -85,7 +82,7 @@ def run_module():
         owner=dict(type='str', required=False),
         offline_token=dict(type='str', required=True)
     )
-    
+
     session = requests.Session()
     adapter = requests.adapters.HTTPAdapter(max_retries=5)
     session.mount('https://', adapter)
@@ -125,8 +122,8 @@ def run_module():
     params = module.params.copy()
     params.pop("offline_token")
     response = session.get(
-      "https://api.openshift.com/api/assisted-install/v2/clusters",
-      headers=headers,
+        "https://api.openshift.com/api/assisted-install/v2/clusters",
+        headers=headers,
     )
 
     result['result'] = response.json()
