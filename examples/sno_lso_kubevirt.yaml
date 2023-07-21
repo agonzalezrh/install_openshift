@@ -104,14 +104,16 @@
             pull_secret: "{{ pull_secret }}"
           register: newinfraenv
 
+#        - name: Create a SNO VM
+#          kubernetes.core.k8s:
+#            definition: "{{ lookup('ansible.builtin.template', 'templates/sno-lso.yaml') }}"
+#            wait: true
+#            wait_timeout: 300
+#            wait_condition:
+#              status: true
+#              type: Ready
         - name: Create a SNO VM
-          kubernetes.core.k8s:
-            definition: "{{ lookup('ansible.builtin.template', 'templates/sno-lso.yaml') }}"
-            wait: true
-            wait_timeout: 300
-            wait_condition:
-              status: true
-              type: Ready
+          include_tasks: tasks/create_sno_lso.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_sno }}"

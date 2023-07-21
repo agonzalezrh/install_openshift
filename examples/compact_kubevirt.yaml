@@ -128,14 +128,16 @@
             static_network_config: "{{ static_network_config }}"
           register: newinfraenv
 
+#        - name: Create a three master VMs for Compact cluster
+#          kubernetes.core.k8s:
+#            definition: "{{ lookup('ansible.builtin.template', 'templates/masters.yaml') }}"
+#            wait: true
+#            wait_timeout: 300
+#            wait_condition:
+#              status: true
+#              type: Ready
         - name: Create a three master VMs for Compact cluster
-          kubernetes.core.k8s:
-            definition: "{{ lookup('ansible.builtin.template', 'templates/masters.yaml') }}"
-            wait: true
-            wait_timeout: 300
-            wait_condition:
-              status: true
-              type: Ready
+          include_tasks: tasks/create_masters.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_master_prefix }}-{{ _index }}"

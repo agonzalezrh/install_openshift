@@ -65,7 +65,6 @@
             cluster_id: "{{ cluster_id }}"
             offline_token: "{{ offline_token }}"
 
-
     - name: Create Full cluster
       when: action == "create"
       block:
@@ -151,8 +150,6 @@
             pull_secret: "{{ pull_secret }}"
             high_availability_mode: "Full"
             schedulable_masters: false
-            olm_operators:
-              - name: "odf"
             service_networks:
               - cidr: "172.31.0.0/16"
             machine_networks:
@@ -163,12 +160,12 @@
             ingress_vip: 10.10.10.101
             ingress_vips:
               - ip: 10.10.10.101
-
           register: newcluster
 
         - name: Include vars
           include_vars:
-            file: vars/static_network_config_full_odf.yaml
+            file: vars/static_network_config_full.yaml
+
         - name: Create Infrastructure environment
           agonzalezrh.install_openshift.create_infra_env:
             name: "{{ cluster_name }}-infra-env"
@@ -180,14 +177,16 @@
             static_network_config: "{{ static_network_config }}"
           register: newinfraenv
 
-        - name: Create a three master VMs for Full cluster
-          kubernetes.core.k8s:
-            definition: "{{ lookup('ansible.builtin.template', 'templates/masters-odf.yaml') }}"
-            wait: true
-            wait_timeout: 300
-            wait_condition:
-              status: true
-              type: Ready
+#        - name: Create a three master VMs for Full cluster
+#          kubernetes.core.k8s:
+#            definition: "{{ lookup('ansible.builtin.template', 'templates/masters.yaml') }}"
+#            wait: true
+#            wait_timeout: 300
+#            wait_condition:
+#              status: true
+#              type: Ready
+        - name: Create a three master VMs for Compact cluster
+          include_tasks: tasks/create_masters.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
@@ -200,14 +199,16 @@
           loop_control:
             loop_var: _index
 
-        - name: Create a three worker VMs for Full cluster
-          kubernetes.core.k8s:
-            definition: "{{ lookup('ansible.builtin.template', 'templates/workers-odf.yaml') }}"
-            wait: true
-            wait_timeout: 300
-            wait_condition:
-              status: true
-              type: Ready
+#        - name: Create a three worker VMs for Full cluster
+#          kubernetes.core.k8s:
+#            definition: "{{ lookup('ansible.builtin.template', 'templates/workers.yaml') }}"
+#            wait: true
+#            wait_timeout: 300
+#            wait_condition:
+#              status: true
+#              type: Ready
+        - name: Create a three master VMs for Compact cluster
+          include_tasks: tasks/create_workers_odf.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_worker_prefix }}-{{ _index }}"
@@ -229,22 +230,16 @@
             configure_hosts:
               - hostname: master-{{ cluster_name }}-1
                 role: master
-                installation_disk: /dev/vda
               - hostname: master-{{ cluster_name }}-2
                 role: master
-                installation_disk: /dev/vda
               - hostname: master-{{ cluster_name }}-3
                 role: master
-                installation_disk: /dev/vda
               - hostname: worker-{{ cluster_name }}-1
                 role: worker
-                installation_disk: /dev/vda
               - hostname: worker-{{ cluster_name }}-2
                 role: worker
-                installation_disk: /dev/vda
               - hostname: worker-{{ cluster_name }}-3
                 role: worker
-                installation_disk: /dev/vda
             wait_timeout: 600
 
         - name: Start cluster installation

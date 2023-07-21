@@ -1,35 +1,36 @@
 ---
-- name: Create master virtual machine
-  community.kubevirt.kubevirt_vm:
+- name: Create Master virtual machine
+  kubernetes.kubevirt.kubevirt_vm:
     name: "{{ vmname }}"
     namespace: "{{ namespace }}"
-    image: "{{ image_url }}"
     data_volume_templates:
-      - name: "{{ vmname }}-installation-cdrom"
-        source:
-          http:
-            url: "{{ image_url }}"
-      - name: "{{ vmname }}"
-        preallocation: false
-        source:
-          blank: {}
-        storage:
-          resources:
-            requests:
-              storage: 100Gi
-          storageClassName: "{{ storageclass }}"
+      - metadata:
+          name: "{{ vmname }}-installation-cdrom"
+        spec:
+          source:
+            http:
+              url: "{{ image_url }}"
+          storage:
+            resources:
+              requests:
+                storage: 30Gi
+      - metadata:
+          name: "{{ vmname }}"
+        spec:
+          preallocation: false
+          source:
+            blank: {}
+          storage:
+            resources:
+              requests:
+                storage: 100Gi
+            storageClassName: "{{ storageclass }}"
     running: true
-    template:
-      metadata:
-        annotations:
-          vm.kubevirt.io/flavor: small
-          vm.kubevirt.io/os: rhel8
-          vm.kubevirt.io/workload: server
-      creationTimestamp: null
-      labels:
-        kubevirt.io/domain: "{{ vmname }}"
-        kubevirt.io/size: small
-        role: control-plane
+    annotations:
+      vm.kubevirt.io/os: rhel8
+    labels:
+      kubevirt.io/domain: "{{ vmname }}"
+      role: control-plane
     spec:
       domain:
         cpu:
@@ -40,7 +41,7 @@
           disks:
             - bootOrder: 1
               disk:
-                bus: sata
+                bus: virtio
               name: rootdisk
             - bootOrder: 2
               cdrom:
@@ -54,7 +55,6 @@
               macAddress: f6:45:ae:9e:23:0{{ _index }}
               bridge: {}
           networkInterfaceMultiqueue: true
-          rng: {}
         machine:
           type: pc-q35-rhel8.6.0
         resources:
@@ -68,11 +68,10 @@
         - name: "{{ network_name }}"
           multus:
             networkName: "{{ network_name }}"
-
       terminationGracePeriodSeconds: 180
       volumes:
         - dataVolume:
-            name: {{ vmname }}
+            name: "{{ vmname }}"
           name: rootdisk
         - dataVolume:
             name: "{{ vmname }}-installation-cdrom"
