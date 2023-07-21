@@ -124,6 +124,11 @@
             offline_token: "{{ offline_token }}"
             expected_hosts: 1
             wait_timeout: 600
+            infra_env_id: "{{ newinfraenv.result.id }}"
+            configure_hosts:
+              - hostname: "{{ ocp_vmname_sno }}"
+                role: master
+                installation_disk: /dev/vda
 
         - name: Start cluster installation
           agonzalezrh.install_openshift.install_cluster:
