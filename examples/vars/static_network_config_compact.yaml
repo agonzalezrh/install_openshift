@@ -1,0 +1,80 @@
+static_network_config:
+  - network_yaml: |
+      interfaces:
+      - ipv4:
+          dhcp: true
+          enabled: true
+        name: enp1s0
+        state: up
+        type: ethernet
+      - ipv4:
+          address:
+          - ip: 10.10.10.10
+            prefix-length: 24
+          dhcp: false
+          enabled: true
+        name: enp2s0
+        state: up
+        type: ethernet
+      routes:
+        config:
+        - destination: 0.0.0.0/0
+          next-hop-address: 10.10.10.1
+          next-hop-interface: enp2s0
+          metric: 200
+    mac_interface_map:
+      - mac_address: "f6:45:ae:9e:23:01"
+        logical_nic_name: "enp2s0"
+  - network_yaml: |
+      interfaces:
+      - ipv4:
+          dhcp: true
+          enabled: true
+        name: enp1s0
+        state: up
+        type: ethernet
+      - ipv4:
+          address:
+          - ip: 10.10.10.11
+            prefix-length: 24
+          dhcp: false
+          enabled: true
+        name: enp2s0
+        state: up
+        type: ethernet
+      routes:
+        config:
+        - destination: 0.0.0.0/0
+          next-hop-address: 10.10.10.1
+          next-hop-interface: enp2s0
+          metric: 200
+    mac_interface_map:
+      - mac_address: "f6:45:ae:9e:23:02"
+        logical_nic_name: "enp2s0"
+  - network_yaml: |
+      interfaces:
+      - ipv4:
+          dhcp: true
+          enabled: true
+        name: enp1s0
+        state: up
+        type: ethernet
+      - ipv4:
+          address:
+          - ip: 10.10.10.12
+            prefix-length: 24
+          dhcp: false
+          enabled: true
+        name: enp2s0
+        state: up
+        type: ethernet
+      routes:
+        config:
+        - destination: 0.0.0.0/0
+          next-hop-address: 10.10.10.1
+          next-hop-interface: enp2s0
+          metric: 200
+
+    mac_interface_map:
+      - mac_address: "f6:45:ae:9e:23:03"
+        logical_nic_name: "enp2s0"

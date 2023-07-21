@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+  gather_facts: false
+  become: false
+  vars:
+    offline_token_path: "/tmp/offline-token.txt"
+    offline_token: "{{ lookup('ansible.builtin.file', offline_token_path ) }}"
+  tasks:
+    - name: Get a list of clusters
+      agonzalezrh.install_openshift.list_clusters:
+        offline_token: "{{ offline_token }}"
+      register: listclusters
+
+    - name: Show the created clusters and the status
+      debug:
+        msg: "{{ item.name }} - {{ item.id }} - {{ item.status }}"
+      loop: "{{ listclusters.result }}"
+      loop_control:
+        label: "{{ item.name }}"
