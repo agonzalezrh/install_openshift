@@ -2,9 +2,8 @@
 - hosts: localhost
   gather_facts: false
   become: false
-  vars:
-    offline_token_path: "/tmp/offline-token.txt"
-    offline_token: "{{ lookup('ansible.builtin.file', offline_token_path ) }}"
+  vars_files:
+    - vars/config.yaml
   tasks:
     - name: Get a list of clusters
       agonzalezrh.install_openshift.list_clusters:

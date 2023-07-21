@@ -15,11 +15,11 @@ DOCUMENTATION = r'''
 ---
 module: get_credentials
 
-short_description: The cluster whose admin credentials should be retrieved.
+short_description: Get the cluster admin credentials.
 
 version_added: "1.0.0"
 
-description: creates a new cluster on console.redhat.com/openshift
+description: Get the cluster admin credentials.
 
 options:
     cluster_id:

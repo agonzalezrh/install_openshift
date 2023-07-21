@@ -15,11 +15,11 @@ DOCUMENTATION = r'''
 ---
 module: wait_for_hosts
 
-short_description: Wait for the hosts to be ready
-
+short_description: Wait for the hosts to be ready and configure them.
+ 
 version_added: "1.0.0"
 
-description: creates a new cluster on console.redhat.com/openshift
+description: Wait for the hosts to be ready and configure them.
 
 options:
     cluster_id:

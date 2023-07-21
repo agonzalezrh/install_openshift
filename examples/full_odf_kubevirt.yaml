@@ -2,22 +2,8 @@
 - hosts: localhost
   gather_facts: false
   become: false
-  vars:
-    pull_secret_path: "/tmp/pull-secret.txt"
-    pull_secret: "{{ lookup('ansible.builtin.file', pull_secret_path) | to_json }}"
-    offline_token_path: "/tmp/offline-token.txt"
-    offline_token: "{{ lookup('ansible.builtin.file', offline_token_path ) }}"
-    ssh_authorized_key_path: "{{ '~/.ssh/id_rsa.pub' | expanduser }}"
-    ssh_authorized_key: "{{ lookup('ansible.builtin.file', ssh_authorized_key_path ) }}"
-    cluster_domain: "ocpclusters.dev.redhatworkshops.io"
-    cluster_version: "4.13"
-    cluster_iso_type: "minimal-iso"
-    dns_zone: "dev.redhatworkshops.io"
-    ocp_namespace: "vmexamples"
-    ocp_vmname_master_prefix: "master-{{ cluster_name }}"
-    ocp_vmname_worker_prefix: "worker-{{ cluster_name }}"
-    action: "create"
-    output_dir: "{{ '~/.kube/clusters' | expanduser }}"
+  vars_files:
+    - vars/config.yaml
   vars_prompt:
     - name: cluster_name
       prompt: Specify cluster name
