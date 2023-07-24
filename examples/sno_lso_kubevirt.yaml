@@ -9,7 +9,7 @@
       prompt: Specify cluster name
       private: false
   tasks:
-    - name: Destroy SNO cluster
+    - name: Destroy SNO-LSO cluster
       when: action == "delete" or action == "destroy"
       block:
         - name: Delete the service (type LoadBalancer) for SNO
@@ -30,13 +30,11 @@
             - "api"
             - "*.apps"
 
-        - name: Delete a SNO VM
-          kubernetes.core.k8s:
-            state: absent
-            api_version: v1
-            kind: VirtualMachine
-            namespace: "{{ ocp_namespace }}"
+        - name: Delete a SNO-LSO VM
+          kubernetes.kubevirt.kubevirt_vm:
             name: "{{ ocp_vmname_sno }}"
+            namespace: "{{ namespace }}"
+            state: absent
 
         - name: Remove Assisted Installer Cluster
           agonzalezrh.install_openshift.delete_cluster:
@@ -44,7 +42,7 @@
             offline_token: "{{ offline_token }}"
 
 
-    - name: Create SNO cluster
+    - name: Create SNO-LSO cluster
       when: action == "create"
       block:
         - name: Add the service (type LoadBalancer) for SNO
@@ -104,15 +102,7 @@
             pull_secret: "{{ pull_secret }}"
           register: newinfraenv
 
-#        - name: Create a SNO VM
-#          kubernetes.core.k8s:
-#            definition: "{{ lookup('ansible.builtin.template', 'templates/sno-lso.yaml') }}"
-#            wait: true
-#            wait_timeout: 300
-#            wait_condition:
-#              status: true
-#              type: Ready
-        - name: Create a SNO VM
+        - name: Create a SNO-LSO VM
           include_tasks: tasks/create_sno_lso.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"

@@ -26,6 +26,8 @@
                 storage: 100Gi
             storageClassName: "{{ storageclass }}"
     running: true
+    wait: true
+    wait_timeout: 600
     annotations:
       vm.kubevirt.io/os: rhel8
     labels:

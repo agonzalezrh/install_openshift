@@ -31,12 +31,10 @@
             - "*.apps"
 
         - name: Delete a Compact VM
-          kubernetes.core.k8s:
-            state: absent
-            api_version: v1
-            kind: VirtualMachine
-            namespace: "{{ ocp_namespace }}"
+          kubernetes.kubevirt.kubevirt_vm:
             name: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
+            namespace: "{{ namespace }}"
+            state: absent
           loop: "{{ query('sequence', 'start=1 end=3') }}"
           loop_control:
             loop_var: _index
@@ -130,14 +128,6 @@
             static_network_config: "{{ static_network_config }}"
           register: newinfraenv
 
-#        - name: Create a three master VMs for Compact cluster
-#          kubernetes.core.k8s:
-#            definition: "{{ lookup('ansible.builtin.template', 'templates/masters-compact-odf.yaml') }}"
-#            wait: true
-#            wait_timeout: 300
-#            wait_condition:
-#              status: true
-#              type: Ready
         - name: Create a three master VMs for Compact cluster
           include_tasks: tasks/create_masters_compact_odf.yaml
           vars:
