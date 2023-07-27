@@ -54,7 +54,7 @@
               model: virtio
               name: default
             - name: "{{ network_name }}"
-              macAddress: f6:45:ae:9e:23:0{{ _index }}
+              macAddress: "{{ masters_macs[_index|int] }}"
               bridge: {}
           networkInterfaceMultiqueue: true
         machine:

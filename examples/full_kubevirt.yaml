@@ -187,7 +187,7 @@
           loop_control:
             loop_var: _index
 
-        - name: Create a three master VMs for Compact cluster
+        - name: Create a three worker VMs for Compact cluster
           include_tasks: tasks/create_workers.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"

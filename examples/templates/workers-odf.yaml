@@ -87,7 +87,7 @@ spec:
               model: virtio
               name: default
             - name: "{{ network_name }}"
-              macAddress: f6:45:ae:9e:23:1{{ _index }}
+              macAddress: "{{ workers_macs[_index|int] }}"
               bridge: {}
           networkInterfaceMultiqueue: true
           rng: {}

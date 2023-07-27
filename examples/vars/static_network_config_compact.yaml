@@ -1,3 +1,4 @@
+---
 static_network_config:
   - network_yaml: |
       interfaces:
@@ -23,7 +24,7 @@ static_network_config:
           next-hop-interface: enp2s0
           metric: 200
     mac_interface_map:
-      - mac_address: "f6:45:ae:9e:23:01"
+      - mac_address: "{{ masters_macs[1] }}"
         logical_nic_name: "enp2s0"
   - network_yaml: |
       interfaces:
@@ -49,7 +50,7 @@ static_network_config:
           next-hop-interface: enp2s0
           metric: 200
     mac_interface_map:
-      - mac_address: "f6:45:ae:9e:23:02"
+      - mac_address: "{{ masters_macs[2] }}"
         logical_nic_name: "enp2s0"
   - network_yaml: |
       interfaces:
@@ -76,5 +77,5 @@ static_network_config:
           metric: 200
 
     mac_interface_map:
-      - mac_address: "f6:45:ae:9e:23:03"
+      - mac_address: "{{ masters_macs[3] }}"
         logical_nic_name: "enp2s0"
