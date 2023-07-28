@@ -1,0 +1,27 @@
+---
+- name: Create a SNO VM
+  community.vmware.vmware_guest:
+    state: present
+    cluster: "Cluster-1"
+    datacenter: "SDDC-Datacenter"
+    folder: "/Workloads/{{ env_type }}-{{ guid }}"
+    name: "{{ vmname }}"
+    guest_id: "rhel8_64Guest"
+    wait_for_ip_address: true
+    wait_for_ip_address_timeout: 600
+    disk:
+      - datastore: "{{ vcenter_datastore }}"
+        size_gb: "100"
+        type: "thin"
+    cdrom:
+      type: iso
+      iso_path: "[{{ vcenter_datastore }}] {{ env_type }}-{{ guid }}/{{ cluster_iso_type }}.iso"
+      #iso_path: "[{{ vcenter_datastore }}] isos/{{ cluster_iso_type }}.iso"
+    hardware:
+      memory_mb: 16384
+      num_cpus: 8
+    networks:
+      - name: "segment-{{ env_type }}-{{ guid }}"
+    vapp_properties:
+      - id: guestinfo.hostname
+        value: "{{ vmname }}"

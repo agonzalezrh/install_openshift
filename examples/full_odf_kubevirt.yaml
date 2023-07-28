@@ -174,7 +174,7 @@
           register: newinfraenv
 
         - name: Create a three master VMs for Compact cluster
-          include_tasks: tasks/create_masters.yaml
+          include_tasks: tasks/kubevirt/create_masters.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
@@ -188,7 +188,7 @@
             loop_var: _index
 
         - name: Create a three workers VMs for Compact cluster
-          include_tasks: tasks/create_workers_odf.yaml
+          include_tasks: tasks/kubevirt/create_workers_odf.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_worker_prefix }}-{{ _index }}"
