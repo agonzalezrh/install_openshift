@@ -1,6 +1,6 @@
 ---
 - name: Create SNO-LSO virtual machine
-  kubernetes.kubevirt.kubevirt_vm:
+  kubevirt.core.kubevirt_vm:
     name: "{{ vmname }}"
     namespace: "{{ namespace }}"
     data_volume_templates:

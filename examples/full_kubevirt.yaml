@@ -28,18 +28,18 @@
             namespace: "{{ ocp_namespace }}"
             name: "{{ ocp_vmname_worker_prefix }}-svc"
 
-        - name: Delete CNAME dns record
+        - name: Delete A dns record
           amazon.aws.route53:
             state: absent
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
+            type: A
           loop:
             - "api"
             - "*.apps"
 
         - name: Delete a Full VM - masters
-          kubernetes.kubevirt.kubevirt_vm:
+          kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
             namespace: "{{ namespace }}"
             state: absent
@@ -48,7 +48,7 @@
             loop_var: _index
 
         - name: Delete a Full VM - workers
-          kubernetes.kubevirt.kubevirt_vm:
+          kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_worker_prefix }}-{{ _index }}"
             namespace: "{{ namespace }}"
             state: absent
@@ -80,18 +80,18 @@
             kind: Service
             name: "{{ ocp_vmname_master_prefix }}-svc"
             namespace: "{{ ocp_namespace }}"
-          until: full_svc_masters.resources[0].status.loadBalancer.ingress[0].hostname | default('') != ''
+          until: full_svc_masters.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
           retries: 10
           delay: 2
 
-        - name: Add CNAME dns record - masters
+        - name: Add A dns record - masters
           amazon.aws.route53:
             state: present
             overwrite: true
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
-            value: "{{ full_svc_masters.resources[0].status.loadBalancer.ingress[0].hostname }}"
+            type: A
+            value: "{{ full_svc_masters.resources[0].status.loadBalancer.ingress[0].ip }}"
             ttl: 30
           loop:
             - "api"
@@ -112,18 +112,18 @@
             kind: Service
             name: "{{ ocp_vmname_worker_prefix }}-svc"
             namespace: "{{ ocp_namespace }}"
-          until: full_svc_workers.resources[0].status.loadBalancer.ingress[0].hostname | default('') != ''
+          until: full_svc_workers.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
           retries: 10
           delay: 2
 
-        - name: Add CNAME dns record - masters
+        - name: Add A dns record - masters
           amazon.aws.route53:
             state: present
             overwrite: true
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
-            value: "{{ full_svc_workers.resources[0].status.loadBalancer.ingress[0].hostname }}"
+            type: A
+            value: "{{ full_svc_workers.resources[0].status.loadBalancer.ingress[0].ip }}"
             ttl: 30
           loop:
             - "*.apps"
@@ -179,7 +179,7 @@
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
             namespace: "{{ ocp_namespace }}"
-            storageclass: "gp3-csi"
+            storageclass: "{{ storage_class }}"
             network: "{{ cluster_name}}-openshift"
             network_name: "{{ cluster_name }}-openshift"
             pod_network: "192.168.{{ _index }}.0/24"
@@ -193,7 +193,7 @@
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_worker_prefix }}-{{ _index }}"
             namespace: "{{ ocp_namespace }}"
-            storageclass: "gp3-csi"
+            storageclass: "{{ storage_class }}"
             network: "{{ cluster_name}}-openshift"
             network_name: "{{ cluster_name }}-openshift"
             pod_network: "192.168.1{{ _index }}.0/24"

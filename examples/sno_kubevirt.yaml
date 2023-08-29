@@ -20,18 +20,18 @@
             namespace: "{{ ocp_namespace }}"
             name: "{{ ocp_vmname_sno }}"
 
-        - name: Delete CNAME dns record
+        - name: Delete A dns record
           amazon.aws.route53:
             state: absent
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
+            type: A
           loop:
             - "api"
             - "*.apps"
 
         - name: Delete a SNO VM
-          kubernetes.kubevirt.kubevirt_vm:
+          kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_sno }}"
             namespace: "{{ namespace }}"
             state: absent
@@ -62,17 +62,17 @@
             kind: Service
             name: "{{ ocp_vmname_sno }}-svc"
             namespace: "{{ ocp_namespace }}"
-          until: sno_svc.resources[0].status.loadBalancer.ingress[0].hostname | default('') != ''
+          until: sno_svc.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
           retries: 10
           delay: 6
 
-        - name: Add CNAME dns record
+        - name: Add A dns record
           amazon.aws.route53:
             state: present
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
-            value: "{{ sno_svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
+            type: A
+            value: "{{ sno_svc.resources[0].status.loadBalancer.ingress[0].ip }}"
             ttl: 30
             overwrite: "{{ overwrite_dns }}"
           loop:
@@ -107,7 +107,7 @@
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_sno }}"
             namespace: "{{ ocp_namespace }}"
-            storageclass: "gp3-csi"
+            storageclass: "{{ storage_class }}"
 
         - name: Wait for the hosts to be ready
           agonzalezrh.install_openshift.wait_for_hosts:

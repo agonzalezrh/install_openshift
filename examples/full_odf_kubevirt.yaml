@@ -39,7 +39,7 @@
             - "*.apps"
 
         - name: Delete a Full VM - masters
-          kubernetes.kubevirt.kubevirt_vm:
+          kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
             namespace: "{{ namespace }}"
             state: absent
@@ -48,7 +48,7 @@
             loop_var: _index
 
         - name: Delete a Full VM - workers
-          kubernetes.kubevirt.kubevirt_vm:
+          kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_worker_prefix }}-{{ _index }}"
             namespace: "{{ namespace }}"
             state: absent
@@ -179,7 +179,7 @@
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
             namespace: "{{ ocp_namespace }}"
-            storageclass: "gp3-csi"
+            storageclass: "{{ storage_class }}"
             network: "{{ cluster_name}}-openshift"
             network_name: "{{ cluster_name }}-openshift"
             pod_network: "192.168.{{ _index }}.0/24"
@@ -193,7 +193,7 @@
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_worker_prefix }}-{{ _index }}"
             namespace: "{{ ocp_namespace }}"
-            storageclass: "gp3-csi"
+            storageclass: "{{ storage_class }}"
             network: "{{ cluster_name}}-openshift"
             network_name: "{{ cluster_name }}-openshift"
             pod_network: "192.168.1{{ _index }}.0/24"

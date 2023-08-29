@@ -31,7 +31,7 @@
             - "*.apps"
 
         - name: Delete a SNO-LSO VM
-          kubernetes.kubevirt.kubevirt_vm:
+          kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_sno }}"
             namespace: "{{ namespace }}"
             state: absent
@@ -108,7 +108,7 @@
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_sno }}"
             namespace: "{{ ocp_namespace }}"
-            storageclass: "gp3-csi"
+            storageclass: "{{ storage_class }}"
 
         - name: Wait for the hosts to be ready
           agonzalezrh.install_openshift.wait_for_hosts:
