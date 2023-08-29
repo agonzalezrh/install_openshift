@@ -134,7 +134,7 @@
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
             namespace: "{{ ocp_namespace }}"
-            storageclass: "gp3-csi"
+            storageclass: "{{ storage_class }}"
             network: "{{ cluster_name}}-openshift"
             network_name: "{{ cluster_name }}-openshift"
             pod_network: "192.168.{{ _index }}.0/24"
