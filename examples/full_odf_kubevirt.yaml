@@ -28,12 +28,12 @@
             namespace: "{{ ocp_namespace }}"
             name: "{{ ocp_vmname_worker_prefix }}-svc"
 
-        - name: Delete CNAME dns record
+        - name: Delete A dns record
           amazon.aws.route53:
             state: absent
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
+            type: A
           loop:
             - "api"
             - "*.apps"
@@ -41,7 +41,7 @@
         - name: Delete a Full VM - masters
           kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
-            namespace: "{{ namespace }}"
+            namespace: "{{ ocp_namespace }}"
             state: absent
           loop: "{{ query('sequence', 'start=1 end=3') }}"
           loop_control:
@@ -50,7 +50,7 @@
         - name: Delete a Full VM - workers
           kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_worker_prefix }}-{{ _index }}"
-            namespace: "{{ namespace }}"
+            namespace: "{{ ocp_namespace }}"
             state: absent
           loop: "{{ query('sequence', 'start=1 end=3') }}"
           loop_control:
@@ -80,18 +80,18 @@
             kind: Service
             name: "{{ ocp_vmname_master_prefix }}-svc"
             namespace: "{{ ocp_namespace }}"
-          until: full_svc_masters.resources[0].status.loadBalancer.ingress[0].hostname | default('') != ''
+          until: full_svc_masters.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
           retries: 10
           delay: 2
 
-        - name: Add CNAME dns record - masters
+        - name: Add A dns record - masters
           amazon.aws.route53:
             state: present
             overwrite: true
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
-            value: "{{ full_svc_masters.resources[0].status.loadBalancer.ingress[0].hostname }}"
+            type: A
+            value: "{{ full_svc_masters.resources[0].status.loadBalancer.ingress[0].ip }}"
             ttl: 30
           loop:
             - "api"
@@ -112,18 +112,18 @@
             kind: Service
             name: "{{ ocp_vmname_worker_prefix }}-svc"
             namespace: "{{ ocp_namespace }}"
-          until: full_svc_workers.resources[0].status.loadBalancer.ingress[0].hostname | default('') != ''
+          until: full_svc_workers.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
           retries: 10
           delay: 2
 
-        - name: Add CNAME dns record - masters
+        - name: Add A dns record - masters
           amazon.aws.route53:
             state: present
             overwrite: true
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
-            value: "{{ full_svc_workers.resources[0].status.loadBalancer.ingress[0].hostname }}"
+            type: A
+            value: "{{ full_svc_workers.resources[0].status.loadBalancer.ingress[0].ip }}"
             ttl: 30
           loop:
             - "*.apps"
@@ -146,6 +146,8 @@
             pull_secret: "{{ pull_secret }}"
             high_availability_mode: "Full"
             schedulable_masters: false
+            olm_operators:
+              - name: "odf"
             service_networks:
               - cidr: "172.31.0.0/16"
             machine_networks:
@@ -173,7 +175,7 @@
             static_network_config: "{{ static_network_config }}"
           register: newinfraenv
 
-        - name: Create a three master VMs for Compact cluster
+        - name: Create a three master VMs for Full cluster
           include_tasks: tasks/kubevirt/create_masters.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
@@ -187,7 +189,7 @@
           loop_control:
             loop_var: _index
 
-        - name: Create a three workers VMs for Compact cluster
+        - name: Create a three worker VMs for Full cluster
           include_tasks: tasks/kubevirt/create_workers_odf.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"

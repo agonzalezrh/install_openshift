@@ -41,7 +41,7 @@
         - name: Delete a Full VM - masters
           kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
-            namespace: "{{ namespace }}"
+            namespace: "{{ ocp_namespace }}"
             state: absent
           loop: "{{ query('sequence', 'start=1 end=3') }}"
           loop_control:
@@ -50,7 +50,7 @@
         - name: Delete a Full VM - workers
           kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_worker_prefix }}-{{ _index }}"
-            namespace: "{{ namespace }}"
+            namespace: "{{ ocp_namespace }}"
             state: absent
           loop: "{{ query('sequence', 'start=1 end=3') }}"
           loop_control:
@@ -173,7 +173,7 @@
             static_network_config: "{{ static_network_config }}"
           register: newinfraenv
 
-        - name: Create a three master VMs for Compact cluster
+        - name: Create a three master VMs for Full cluster
           include_tasks: tasks/kubevirt/create_masters.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
@@ -187,7 +187,7 @@
           loop_control:
             loop_var: _index
 
-        - name: Create a three worker VMs for Compact cluster
+        - name: Create a three worker VMs for Full cluster
           include_tasks: tasks/kubevirt/create_workers.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"

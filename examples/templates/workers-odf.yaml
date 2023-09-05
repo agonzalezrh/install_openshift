@@ -23,7 +23,7 @@ spec:
         storage:
           resources:
             requests:
-              storage: 30Gi
+              storage: 3Gi
     - metadata:
         name: {{ vmname }}
         namespace: {{ namespace }}
@@ -97,6 +97,11 @@ spec:
           requests:
             memory: 32Gi
       evictionStrategy: LiveMigrate
+      readinessProbe:
+        httpGet:
+          port: 443
+        initialDelaySeconds: 120
+        timeoutSeconds: 5
       networks:
         - name: default
           pod:
