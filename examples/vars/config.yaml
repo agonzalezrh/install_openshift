@@ -16,7 +16,9 @@ ocp_vmname_worker_prefix: "worker-{{ cluster_name }}"
 action: "create"
 output_dir: "{{ '~/.kube/clusters' | expanduser }}"
 overwrite_dns: false
-storage_class: "ocs-external-storagecluster-ceph-rbd"
+storage_class: "ocs-storagecluster-ceph-rbd"
+etcd_storage_class: "hostpath-csi"
+network_prefix: "10.10.10"
 masters_macs:
   - ""
   - "{{ 'f6:45:ae' | community.general.random_mac(ocp_namespace + cluster_name + 'm1') }}"

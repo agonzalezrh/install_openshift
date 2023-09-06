@@ -24,6 +24,7 @@ spec:
           resources:
             requests:
               storage: 3Gi
+          storageClassName: "{{ storageclass }}"
     - metadata:
         name: {{ vmname }}
         namespace: {{ namespace }}

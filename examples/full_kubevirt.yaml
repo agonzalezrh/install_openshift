@@ -162,6 +162,15 @@
           include_vars:
             file: vars/static_network_config_full.yaml
 
+        - name: Add etcd manifest
+          agonzalezrh.install_openshift.create_manifest:
+            cluster_id: "{{ newcluster.result.id }}"
+            offline_token: "{{ offline_token }}"
+            content: "{{lookup('ansible.builtin.file', 'files/etcd_disk.yaml') | b64encode }}"
+            file_name: "10-masters-etcd-config.yaml"
+            folder: "manifests"
+
+
         - name: Create Infrastructure environment
           agonzalezrh.install_openshift.create_infra_env:
             name: "{{ cluster_name }}-infra-env"
@@ -254,6 +263,35 @@
             - kubeadmin-password
             - kubeconfig
             - kubeconfig-noingress
+
+        - name: Scale router pod to the number of workers
+          environment:
+            KUBECONFIG: "{{ output_dir }}/{{ cluster_name }}/kubeconfig"
+          kubernetes.core.k8s:
+            state: patched
+            kind: IngressController
+            name: default
+            namespace: openshift-ingress-operator
+            merge_type: merge
+            definition:
+              spec:
+                replicas: 3
+
+        - name: Configure OVN-Kubernetes to switch to local gateway mode
+          environment:
+            KUBECONFIG: "{{ output_dir }}/{{ cluster_name }}/kubeconfig"
+          kubernetes.core.k8s:
+            state: patched
+            api_version: operator.openshift.io/v1
+            kind: Network
+            name: cluster
+            merge_type: merge
+            definition:
+              spec:
+                defaultNetwork:
+                  ovnKubernetesConfig:
+                    gatewayConfig:
+                      routingViaHost: true
 
         - name: Downloads OpenShift cluster files
           agonzalezrh.install_openshift.download_files:

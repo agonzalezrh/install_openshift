@@ -53,7 +53,7 @@
             - masquerade: {}
               model: virtio
               name: default
-            - name: "{{ network_name }}"
+            - name: "{{ network }}"
               macAddress: "{{ workers_macs[_index|int] }}"
               bridge: {}
           networkInterfaceMultiqueue: true
@@ -67,7 +67,7 @@
         - name: default
           pod:
             vmNetworkCIDR: "{{ pod_network }}"
-        - name: "{{ network_name }}"
+        - name: "{{ network }}"
           multus:
             networkName: "{{ network_name }}"
       terminationGracePeriodSeconds: 180

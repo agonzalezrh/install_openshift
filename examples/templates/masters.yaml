@@ -24,6 +24,7 @@ spec:
           resources:
             requests:
               storage: 3Gi
+          storageClassName: "{{ storageclass }}"
     - metadata:
         name: {{ vmname }}
         namespace: {{ namespace }}
@@ -69,7 +70,7 @@ spec:
             - masquerade: {}
               model: virtio
               name: default
-            - name: "{{ network_name }}"
+            - name: "{{ network }}"
               macAddress: "{{ masters_macs[_index|int] }}"
               bridge: {}
           networkInterfaceMultiqueue: true
@@ -84,7 +85,7 @@ spec:
         - name: default
           pod:
             vmNetworkCIDR: "{{ pod_network }}"
-        - name: "{{ network_name }}"
+        - name: "{{ network }}"
           multus:
             networkName: "{{ network_name }}"
 
