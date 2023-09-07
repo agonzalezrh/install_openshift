@@ -135,14 +135,14 @@ In this simple example, a **Single Node OpenShift** is created inside **OpenShif
 
 ## Examples Playbooks ready to use
 
-* [List existing clusters](examples/list_clusters.yaml)
+* [List existing clusters](https://github.com/agonzalezrh/install_openshift/blob/main/examples/list_clusters.yaml)
 * OpenShift Virtualization/Kubevirt examples:
-    * [Install SNO](examples/sno_kubevirt.yaml)
-    * [Install SNO with operator LSO](examples/sno_lso_kubevirt.yaml)
-    * [Install Compact cluster](examples/compact_kubevirt.yaml)
-    * [Install Compact cluster with ODF](examples/compact_odf_kubevirt.yaml)
-    * [Install Full cluster](examples/full_kubevirt.yaml)
-    * [Install Full cluster with ODF](examples/full_odf_kubevirt.yaml)
+    * [Install SNO](https://github.com/agonzalezrh/install_openshift/blob/main/examples/sno_kubevirt.yaml)
+    * [Install SNO with operator LSO](https://github.com/agonzalezrh/install_openshift/blob/main/examples/sno_lso_kubevirt.yaml)
+    * [Install Compact cluster](https://github.com/agonzalezrh/install_openshift/blob/main/examples/compact_kubevirt.yaml)
+    * [Install Compact cluster with ODF](https://github.com/agonzalezrh/install_openshift/blob/main/examples/compact_odf_kubevirt.yaml)
+    * [Install Full cluster](https://github.com/agonzalezrh/install_openshift/blob/main/examples/full_kubevirt.yaml)
+    * [Install Full cluster with ODF](https://github.com/agonzalezrh/install_openshift/blob/main/examples/full_odf_kubevirt.yaml)
 
 * vShere examples: coming soon
 * other platforms: coming soon

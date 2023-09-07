@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  gather_facts: false
+  become: false
+  vars_files:
+    - vars/config.yaml
+  vars_prompt:
+    - name: cluster_name
+      prompt: Specify cluster name
+      private: false
+  tasks:
+    - name: Get a list of clusters
+      agonzalezrh.install_openshift.list_clusters:
+        offline_token: "{{ offline_token }}"
+      register: listclusters
+
+    - name: Show the created clusters and the status
+      set_fact:
+        filter_ids: "{{ filter_ids|default([]) + [item.id] }}"
+      when: item.name == cluster_name
+      loop: "{{ listclusters.result }}"
+      loop_control:
+        label: "{{ item.name }}"
+    - name: Show cluster ID(s)
+      debug:
+        var: filter_ids

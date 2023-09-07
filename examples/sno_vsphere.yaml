@@ -9,17 +9,9 @@
       prompt: Specify cluster name
       private: false
   tasks:
-    - name: Destroy SNO-LSO cluster
+    - name: Destroy SNO cluster
       when: action == "delete" or action == "destroy"
       block:
-        - name: Delete the service (type LoadBalancer) for SNO
-          kubernetes.core.k8s:
-            state: absent
-            api_version: v1
-            kind: Service
-            namespace: "{{ ocp_namespace }}"
-            name: "{{ ocp_vmname_sno }}"
-
         - name: Delete CNAME dns record
           amazon.aws.route53:
             state: absent
@@ -30,7 +22,7 @@
             - "api"
             - "*.apps"
 
-        - name: Delete a SNO-LSO VM
+        - name: Delete a SNO VM
           kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_sno }}"
             namespace: "{{ namespace }}"
@@ -42,50 +34,15 @@
             offline_token: "{{ offline_token }}"
 
 
-    - name: Create SNO-LSO cluster
+    - name: Create SNO cluster
       when: action == "create"
       block:
-        - name: Add the service (type LoadBalancer) for SNO
-          kubernetes.core.k8s:
-            definition: "{{ lookup('ansible.builtin.template', 'templates/sno_svc.yaml') }}"
-            wait: true
-            wait_timeout: 300
-          vars:
-            vmname: "{{ ocp_vmname_sno }}"
-            svcname: "{{ ocp_vmname_sno }}-svc"
-            namespace: "{{ ocp_namespace }}"
-
-        - name: Wait for the LoadBalancer value
-          register: sno_svc
-          kubernetes.core.k8s_info:
-            api_version: v1
-            kind: Service
-            name: "{{ ocp_vmname_sno }}-svc"
-            namespace: "{{ ocp_namespace }}"
-          until: sno_svc.resources[0].status.loadBalancer.ingress[0].hostname | default('') != ''
-          retries: 10
-          delay: 2
-
-        - name: Add CNAME dns record
-          amazon.aws.route53:
-            state: present
-            zone: "{{ dns_zone }}"
-            record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
-            value: "{{ sno_svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
-            ttl: 30
-          loop:
-            - "api"
-            - "*.apps"
-
         - name: Create Assisted Installer Cluster
           agonzalezrh.install_openshift.create_cluster:
             name: "{{ cluster_name }}"
             openshift_version: "{{ cluster_version }}"
             base_dns_domain: "{{ cluster_domain }}"
             offline_token: "{{ offline_token }}"
-            olm_operators:
-              - name: "lso"
             pull_secret: "{{ pull_secret }}"
             high_availability_mode: "None"
             service_networks:
@@ -102,8 +59,20 @@
             pull_secret: "{{ pull_secret }}"
           register: newinfraenv
 
-        - name: Create a SNO-LSO VM
-          include_tasks: tasks/kubevirt/create_sno_lso.yaml
+        - name: Create directory for downloaded files
+          ansible.builtin.file:
+            state: directory
+            path: "{{ output_dir }}/{{ cluster_name }}"
+            recurse: true
+
+
+        - name: Upload ISO image to vSphere
+          import_tasks: tasks/vsphere/upload_iso.yaml
+          vars:
+            image_url: "{{ newinfraenv.result.download_url }}"
+
+        - name: Create a SNO VM
+          include_tasks: tasks/vsphere/create_sno.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_sno }}"
@@ -116,11 +85,6 @@
             offline_token: "{{ offline_token }}"
             expected_hosts: 1
             wait_timeout: 600
-            infra_env_id: "{{ newinfraenv.result.id }}"
-            configure_hosts:
-              - hostname: "{{ ocp_vmname_sno }}"
-                role: master
-                installation_disk: /dev/vda
 
         - name: Start cluster installation
           agonzalezrh.install_openshift.install_cluster:
@@ -137,12 +101,6 @@
         - name: Display credentials
           debug:
             var: credentials.result
-
-        - name: Create directory for downloaded credential files
-          ansible.builtin.file:
-            state: directory
-            path: "{{ output_dir }}/{{ cluster_name }}"
-            recurse: true
 
         - name: Downloads OpenShift cluster credentials
           agonzalezrh.install_openshift.download_credentials:

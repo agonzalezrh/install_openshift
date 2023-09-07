@@ -23,7 +23,8 @@ spec:
         storage:
           resources:
             requests:
-              storage: 30Gi
+              storage: 3Gi
+          storageClassName: "{{ storageclass }}"
     - metadata:
         name: {{ vmname }}
         namespace: {{ namespace }}
@@ -70,7 +71,7 @@ spec:
               model: virtio
               name: default
             - name: "{{ network_name }}"
-              macAddress: f6:45:ae:9e:23:1{{ _index }}
+              macAddress: "{{ workers_macs[_index|int] }}"
               bridge: {}
           networkInterfaceMultiqueue: true
           rng: {}
@@ -80,6 +81,11 @@ spec:
           requests:
             memory: 16Gi
       evictionStrategy: LiveMigrate
+      readinessProbe:
+        httpGet:
+          port: 443
+        initialDelaySeconds: 120
+        timeoutSeconds: 5
       networks:
         - name: default
           pod:

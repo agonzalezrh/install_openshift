@@ -1,0 +1,12 @@
+---
+- name: Download ISO
+  ansible.builtin.get_url:
+    url: "{{ image_url }}"
+    dest: "{{ output_dir }}/{{ cluster_name }}/{{ cluster_iso_type }}.iso"
+- name: Upload ISO for Assisted Installer
+  community.vmware.vsphere_copy:
+    datacenter: "SDDC-Datacenter"
+    src: "{{ output_dir }}/{{ cluster_name }}/{{ cluster_iso_type }}.iso"
+    datastore: "{{ vcenter_datastore }}"
+    #dest: "/isos/{{ cluster_iso_type }}.iso"
+    dest: "/{{ env_type }}-{{ guid }}/{{ cluster_iso_type }}.iso"

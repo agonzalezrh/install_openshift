@@ -20,23 +20,21 @@
             namespace: "{{ ocp_namespace }}"
             name: "{{ ocp_vmname_sno }}"
 
-        - name: Delete CNAME dns record
+        - name: Delete A dns record
           amazon.aws.route53:
             state: absent
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
+            type: A
           loop:
             - "api"
             - "*.apps"
 
         - name: Delete a SNO VM
-          kubernetes.core.k8s:
-            state: absent
-            api_version: v1
-            kind: VirtualMachine
-            namespace: "{{ ocp_namespace }}"
+          kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_sno }}"
+            namespace: "{{ namespace }}"
+            state: absent
 
         - name: Remove Assisted Installer Cluster
           agonzalezrh.install_openshift.delete_cluster:
@@ -64,18 +62,19 @@
             kind: Service
             name: "{{ ocp_vmname_sno }}-svc"
             namespace: "{{ ocp_namespace }}"
-          until: sno_svc.resources[0].status.loadBalancer.ingress[0].hostname | default('') != ''
+          until: sno_svc.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
           retries: 10
-          delay: 2
+          delay: 6
 
-        - name: Add CNAME dns record
+        - name: Add A dns record
           amazon.aws.route53:
             state: present
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
-            value: "{{ sno_svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
+            type: A
+            value: "{{ sno_svc.resources[0].status.loadBalancer.ingress[0].ip }}"
             ttl: 30
+            overwrite: "{{ overwrite_dns }}"
           loop:
             - "api"
             - "*.apps"
@@ -103,18 +102,12 @@
           register: newinfraenv
 
         - name: Create a SNO VM
-          kubernetes.core.k8s:
-            definition: "{{ lookup('ansible.builtin.template', 'templates/sno.yaml') }}"
-            wait: true
-            wait_timeout: 300
-            wait_condition:
-              status: true
-              type: Ready
+          include_tasks: tasks/kubevirt/create_sno.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_sno }}"
             namespace: "{{ ocp_namespace }}"
-            storageclass: "gp3-csi"
+            storageclass: "{{ storage_class }}"
 
         - name: Wait for the hosts to be ready
           agonzalezrh.install_openshift.wait_for_hosts:

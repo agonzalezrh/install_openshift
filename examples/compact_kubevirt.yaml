@@ -20,23 +20,21 @@
             namespace: "{{ ocp_namespace }}"
             name: "{{ ocp_vmname_master_prefix }}-svc"
 
-        - name: Delete CNAME dns record
+        - name: Delete A dns record
           amazon.aws.route53:
             state: absent
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
+            type: A
           loop:
             - "api"
             - "*.apps"
 
         - name: Delete a Compact VM
-          kubernetes.core.k8s:
-            state: absent
-            api_version: v1
-            kind: VirtualMachine
-            namespace: "{{ ocp_namespace }}"
+          kubevirt.core.kubevirt_vm:
             name: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
+            namespace: "{{ namespace }}"
+            state: absent
           loop: "{{ query('sequence', 'start=1 end=3') }}"
           loop_control:
             loop_var: _index
@@ -67,18 +65,19 @@
             kind: Service
             name: "{{ ocp_vmname_master_prefix }}-svc"
             namespace: "{{ ocp_namespace }}"
-          until: compact_svc.resources[0].status.loadBalancer.ingress[0].hostname | default('') != ''
+          until: compact_svc.resources[0].status.loadBalancer.ingress[0].ip | default('') != ''
           retries: 10
           delay: 2
 
-        - name: Add CNAME dns record
+        - name: Add A dns record
           amazon.aws.route53:
             state: present
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
-            value: "{{ compact_svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
+            type: A
+            value: "{{ compact_svc.resources[0].status.loadBalancer.ingress[0].ip }}"
             ttl: 30
+            overwrite: true
           loop:
             - "api"
             - "*.apps"
@@ -129,18 +128,12 @@
           register: newinfraenv
 
         - name: Create a three master VMs for Compact cluster
-          kubernetes.core.k8s:
-            definition: "{{ lookup('ansible.builtin.template', 'templates/masters.yaml') }}"
-            wait: true
-            wait_timeout: 300
-            wait_condition:
-              status: true
-              type: Ready
+          include_tasks: tasks/kubevirt/create_masters.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
             namespace: "{{ ocp_namespace }}"
-            storageclass: "gp3-csi"
+            storageclass: "{{ storage_class }}"
             network: "{{ cluster_name}}-openshift"
             network_name: "{{ cluster_name }}-openshift"
             pod_network: "192.168.{{ _index }}.0/24"

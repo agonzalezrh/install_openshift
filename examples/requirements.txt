@@ -1,0 +1,4 @@
+collections:
+  - name: https://github.com/kubevirt/kubernetes.kubevirt/
+    type: git
+  - name: community.general

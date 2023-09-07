@@ -1,3 +1,4 @@
+---
 static_network_config:
   - network_yaml: |
       interfaces:
@@ -9,7 +10,7 @@ static_network_config:
         type: ethernet
       - ipv4:
           address:
-          - ip: 10.10.10.10
+          - ip: {{ network_prefix }}.10
             prefix-length: 24
           dhcp: false
           enabled: true
@@ -19,11 +20,11 @@ static_network_config:
       routes:
         config:
         - destination: 0.0.0.0/0
-          next-hop-address: 10.10.10.1
+          next-hop-address: {{ network_prefix }}.1
           next-hop-interface: enp2s0
           metric: 200
     mac_interface_map:
-      - mac_address: "f6:45:ae:9e:23:01"
+      - mac_address: "{{ masters_macs[1] }}"
         logical_nic_name: "enp2s0"
   - network_yaml: |
       interfaces:
@@ -35,7 +36,7 @@ static_network_config:
         type: ethernet
       - ipv4:
           address:
-          - ip: 10.10.10.11
+          - ip: {{ network_prefix }}.11
             prefix-length: 24
           dhcp: false
           enabled: true
@@ -45,11 +46,11 @@ static_network_config:
       routes:
         config:
         - destination: 0.0.0.0/0
-          next-hop-address: 10.10.10.1
+          next-hop-address: {{ network_prefix }}.1
           next-hop-interface: enp2s0
           metric: 200
     mac_interface_map:
-      - mac_address: "f6:45:ae:9e:23:02"
+      - mac_address: "{{ masters_macs[2] }}"
         logical_nic_name: "enp2s0"
   - network_yaml: |
       interfaces:
@@ -61,7 +62,7 @@ static_network_config:
         type: ethernet
       - ipv4:
           address:
-          - ip: 10.10.10.12
+          - ip: {{ network_prefix }}.12
             prefix-length: 24
           dhcp: false
           enabled: true
@@ -71,12 +72,12 @@ static_network_config:
       routes:
         config:
         - destination: 0.0.0.0/0
-          next-hop-address: 10.10.10.1
+          next-hop-address: {{ network_prefix }}.1
           next-hop-interface: enp2s0
           metric: 200
 
     mac_interface_map:
-      - mac_address: "f6:45:ae:9e:23:03"
+      - mac_address: "{{ masters_macs[3] }}"
         logical_nic_name: "enp2s0"
 
   - network_yaml: |
@@ -89,7 +90,7 @@ static_network_config:
         type: ethernet
       - ipv4:
           address:
-          - ip: 10.10.10.20
+          - ip: {{ network_prefix }}.20
             prefix-length: 24
           dhcp: false
           enabled: true
@@ -99,11 +100,11 @@ static_network_config:
       routes:
         config:
         - destination: 0.0.0.0/0
-          next-hop-address: 10.10.10.1
+          next-hop-address: {{ network_prefix }}.1
           next-hop-interface: enp2s0
           metric: 200
     mac_interface_map:
-      - mac_address: "f6:45:ae:9e:23:11"
+      - mac_address: "{{ workers_macs[1] }}"
         logical_nic_name: "enp2s0"
   - network_yaml: |
       interfaces:
@@ -115,7 +116,7 @@ static_network_config:
         type: ethernet
       - ipv4:
           address:
-          - ip: 10.10.10.21
+          - ip: {{ network_prefix }}.21
             prefix-length: 24
           dhcp: false
           enabled: true
@@ -125,11 +126,11 @@ static_network_config:
       routes:
         config:
         - destination: 0.0.0.0/0
-          next-hop-address: 10.10.10.1
+          next-hop-address: {{ network_prefix }}.1
           next-hop-interface: enp2s0
           metric: 200
     mac_interface_map:
-      - mac_address: "f6:45:ae:9e:23:12"
+      - mac_address: "{{ workers_macs[2] }}"
         logical_nic_name: "enp2s0"
   - network_yaml: |
       interfaces:
@@ -141,7 +142,7 @@ static_network_config:
         type: ethernet
       - ipv4:
           address:
-          - ip: 10.10.10.22
+          - ip: {{ network_prefix }}.22
             prefix-length: 24
           dhcp: false
           enabled: true
@@ -151,12 +152,10 @@ static_network_config:
       routes:
         config:
         - destination: 0.0.0.0/0
-          next-hop-address: 10.10.10.1
+          next-hop-address: {{ network_prefix }}.1
           next-hop-interface: enp2s0
           metric: 200
 
     mac_interface_map:
-      - mac_address: "f6:45:ae:9e:23:13"
+      - mac_address: "{{ workers_macs[3] }}"
         logical_nic_name: "enp2s0"
-
-
