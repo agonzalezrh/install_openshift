@@ -128,15 +128,15 @@
           loop:
             - "*.apps"
 
-        - name: Create OVN secondary network
-          kubernetes.core.k8s:
-            definition: "{{ lookup('ansible.builtin.template', 'templates/net-attach-def.yaml') }}"
-            wait: true
-            wait_timeout: 300
-          vars:
-            network_name: "{{ cluster_name }}-openshift"
-            namespace: "{{ ocp_namespace }}"
-
+#        - name: Create OVN secondary network
+#          kubernetes.core.k8s:
+#            definition: "{{ lookup('ansible.builtin.template', 'templates/net-attach-def.yaml') }}"
+#            wait: true
+#            wait_timeout: 300
+#          vars:
+#            network_name: "{{ cluster_name }}-openshift"
+#            namespace: "{{ ocp_namespace }}"
+#
         - name: Create Assisted Installer Cluster
           agonzalezrh.install_openshift.create_cluster:
             name: "{{ cluster_name }}"
@@ -162,6 +162,14 @@
           include_vars:
             file: vars/static_network_config_full.yaml
 
+        - name: Add etcd manifest
+          agonzalezrh.install_openshift.create_manifest:
+            cluster_id: "{{ newcluster.result.id }}"
+            offline_token: "{{ offline_token }}"
+            content: "{{lookup('ansible.builtin.file', 'files/etcd_disk.yaml') | b64encode }}"
+            file_name: "10-masters-etcd-config.yaml"
+            folder: "openshift"
+
         - name: Create Infrastructure environment
           agonzalezrh.install_openshift.create_infra_env:
             name: "{{ cluster_name }}-infra-env"
@@ -174,14 +182,14 @@
           register: newinfraenv
 
         - name: Create a three master VMs for Full cluster
-          include_tasks: tasks/kubevirt/create_masters.yaml
+          include_tasks: tasks/kubevirt/create_masters_etcd.yaml
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_master_prefix }}-{{ _index }}"
             namespace: "{{ ocp_namespace }}"
             storageclass: "{{ storage_class }}"
-            network: "{{ cluster_name}}-openshift"
-            network_name: "{{ cluster_name }}-openshift"
+            network: "ovnoverlay"
+            network_name: "ovnoverlay"
             pod_network: "192.168.{{ _index }}.0/24"
           loop: "{{ query('sequence', 'start=1 end=3') }}"
           loop_control:
@@ -194,8 +202,8 @@
             vmname: "{{ ocp_vmname_worker_prefix }}-{{ _index }}"
             namespace: "{{ ocp_namespace }}"
             storageclass: "{{ storage_class }}"
-            network: "{{ cluster_name}}-openshift"
-            network_name: "{{ cluster_name }}-openshift"
+            network: "ovnoverlay"
+            network_name: "ovnoverlay"
             pod_network: "192.168.1{{ _index }}.0/24"
           loop: "{{ query('sequence', 'start=1 end=3') }}"
           loop_control:
