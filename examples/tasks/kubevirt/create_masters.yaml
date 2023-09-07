@@ -13,7 +13,7 @@
           storage:
             resources:
               requests:
-                storage: 30Gi
+                storage: 1Gi
       - metadata:
           name: "{{ vmname }}"
         spec:
@@ -25,19 +25,6 @@
               requests:
                 storage: 100Gi
             storageClassName: "{{ storageclass }}"
-
-      - metadata:
-          name: "{{ vmname }}-etcd"
-        spec:
-          preallocation: false
-          source:
-            blank: {}
-          storage:
-            resources:
-              requests:
-                storage: 1Gi
-            storageClassName: "{{ etcd_storage_class }}"
-            volumeMode: Filesystem
 
     running: true
     wait: true
@@ -59,10 +46,6 @@
               disk:
                 bus: virtio
               name: rootdisk
-            - bootOrder: 3
-              disk:
-                bus: virtio
-              name: etcd
             - bootOrder: 2
               cdrom:
                 bus: sata
@@ -96,6 +79,3 @@
         - dataVolume:
             name: "{{ vmname }}-installation-cdrom"
           name: installation-cdrom
-        - dataVolume:
-            name: "{{ vmname }}-etcd"
-          name: etcd
