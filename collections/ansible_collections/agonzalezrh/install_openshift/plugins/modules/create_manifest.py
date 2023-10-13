@@ -15,11 +15,11 @@ DOCUMENTATION = r'''
 ---
 module: create_manifest
 
-short_description: Creates a new OpenShift Discovery ISO.
+short_description: Creates a new Manifest.
 
 version_added: "1.0.0"
 
-description: Creates a new OpenShift Discovery ISO for Assisted Installer
+description: Creates a new Custom Manifest for Assisted Installer
 
 options:
     cluster_id:
@@ -46,15 +46,14 @@ author:
 '''  # noqa
 
 EXAMPLES = r'''
-- name: Create Infrastructure environment
+- name: Create Custom manifest
   agonzalezrh.install_openshift.create_manifest:
     cluster_id: "{{ newcluster.result.id }}"
     content: "{{ etcd_disk }}"
     file_name: "10-masters-storage-config"
     folder: "manifests"
     offline_token: "{{ offline_token }}"
-    pull_secret: "{{ pull_secret }}"
-  register: newinfraenv
+  register: newmanifest
 '''
 RETURN = r'''
 result:

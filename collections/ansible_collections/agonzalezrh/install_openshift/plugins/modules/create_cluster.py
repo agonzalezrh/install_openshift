@@ -145,6 +145,10 @@ options:
         description: A comma-separated list of tags that are associated to the cluster.
         required: false
         type: str
+    user_managed_networking:
+        description: Define if the network is user managed
+        required: false
+        type: bool
     vip_dhcp_allocation:
         description: Indicate if virtual IP DHCP allocation mode is enabled.
         required: false
@@ -210,6 +214,7 @@ def run_module():
         service_network_cidr=dict(type='str', required=False),
         ssh_public_key=dict(type='str', required=False),
         tags=dict(type='str', required=False),
+        user_managed_networking=dict(type='bool', required=False),
         vip_dhcp_allocation=dict(type='bool', required=False)
     )
     session = requests.Session()
