@@ -1,5 +1,5 @@
 ---
-- name: Create a SNO VM
+- name: Create a worker VM
   community.vmware.vmware_guest:
     state: present
     hostname: '{{ vcenter_hostname }}'

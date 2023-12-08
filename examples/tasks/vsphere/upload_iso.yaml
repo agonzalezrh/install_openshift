@@ -5,8 +5,10 @@
     dest: "{{ output_dir }}/{{ cluster_name }}/{{ cluster_iso_type }}.iso"
 - name: Upload ISO for Assisted Installer
   community.vmware.vsphere_copy:
+    hostname: '{{ vcenter_hostname }}'
+    username: '{{ vcenter_username }}'
+    password: '{{ vcenter_password }}'
     datacenter: "SDDC-Datacenter"
     src: "{{ output_dir }}/{{ cluster_name }}/{{ cluster_iso_type }}.iso"
     datastore: "{{ vcenter_datastore }}"
-    #dest: "/isos/{{ cluster_iso_type }}.iso"
     dest: "/{{ env_type }}-{{ guid }}/{{ cluster_iso_type }}.iso"

@@ -12,21 +12,39 @@
     - name: Destroy SNO cluster
       when: action == "delete" or action == "destroy"
       block:
-        - name: Delete CNAME dns record
+        - name: Delete A dns record
           amazon.aws.route53:
             state: absent
             zone: "{{ dns_zone }}"
             record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
-            type: CNAME
+            type: A
           loop:
             - "api"
             - "*.apps"
 
-        - name: Delete a SNO VM
-          kubevirt.core.kubevirt_vm:
+        - name: Stop SNO VM
+          community.vmware.vmware_guest:
+            state: poweredoff
+            hostname: '{{ vcenter_hostname }}'
+            username: '{{ vcenter_username }}'
+            password: '{{ vcenter_password }}'
+            cluster: "Cluster-1"
+            datacenter: "SDDC-Datacenter"
+            folder: "/Workloads/{{ env_type }}-{{ guid }}"
             name: "{{ ocp_vmname_sno }}"
-            namespace: "{{ namespace }}"
+          ignore_errors: true
+
+
+        - name: Delete SNO VM
+          community.vmware.vmware_guest:
             state: absent
+            hostname: '{{ vcenter_hostname }}'
+            username: '{{ vcenter_username }}'
+            password: '{{ vcenter_password }}'
+            cluster: "Cluster-1"
+            datacenter: "SDDC-Datacenter"
+            folder: "/Workloads/{{ env_type }}-{{ guid }}"
+            name: "{{ ocp_vmname_sno }}"
 
         - name: Remove Assisted Installer Cluster
           agonzalezrh.install_openshift.delete_cluster:
@@ -65,7 +83,6 @@
             path: "{{ output_dir }}/{{ cluster_name }}"
             recurse: true
 
-
         - name: Upload ISO image to vSphere
           import_tasks: tasks/vsphere/upload_iso.yaml
           vars:
@@ -76,8 +93,27 @@
           vars:
             image_url: "{{ newinfraenv.result.download_url }}"
             vmname: "{{ ocp_vmname_sno }}"
-            namespace: "{{ ocp_namespace }}"
-            storageclass: "{{ storage_class }}"
+
+        - name: Get VM Info
+          register: r_guest_info
+          community.vmware.vmware_guest_info:
+            hostname: '{{ vcenter_hostname }}'
+            username: '{{ vcenter_username }}'
+            password: '{{ vcenter_password }}'
+            datacenter: "SDDC-Datacenter"
+            folder: "/Workloads/{{env_type}}-{{ guid }}"
+            name: "{{ ocp_vmname_sno }}"
+
+        - name: Add A dns record
+          amazon.aws.route53:
+            state: present
+            zone: "{{ dns_zone }}"
+            record: "{{ item }}.{{ cluster_name}}.{{ cluster_domain }}"
+            value: "{{ r_guest_info.instance.ipv4 }}"
+            type: A
+          loop:
+            - "api"
+            - "*.apps"
 
         - name: Wait for the hosts to be ready
           agonzalezrh.install_openshift.wait_for_hosts:

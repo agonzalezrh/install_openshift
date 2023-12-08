@@ -1,5 +1,5 @@
 ---
-- name: Create a SNO VM
+- name: Create a control plane VM
   community.vmware.vmware_guest:
     state: present
     hostname: '{{ vcenter_hostname }}'
@@ -23,7 +23,7 @@
       type: iso
       iso_path: "[{{ vcenter_datastore }}] {{ env_type }}-{{ guid }}/{{ cluster_iso_type }}.iso"
     hardware:
-      memory_mb: 16384
+      memory_mb: 12288
       num_cpus: 8
     networks:
       - name: "segment-{{ env_type }}-{{ guid }}"

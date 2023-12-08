@@ -144,7 +144,9 @@ In this simple example, a **Single Node OpenShift** is created inside **OpenShif
     * [Install Full cluster](examples/full_kubevirt.yaml)
     * [Install Full cluster with ODF](examples/full_odf_kubevirt.yaml)
 
-* vShere examples: coming soon
+* vShere examples: 
+    * [Install SNO](examples/sno_vsphere.yaml)
+    * [Install Full cluster](examples/full_vsphere.yaml)
 * other platforms: coming soon
 
 To try them:

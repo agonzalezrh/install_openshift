@@ -11,7 +11,7 @@ def _get_access_token(offline_token):
     }
     params = {
         "grant_type": "refresh_token",
-        "client_id": "cloud-services",
+        "client_id": "rhsm-api",
         "refresh_token": offline_token
     }
     response = requests.post(
